@@ -1,0 +1,11 @@
+.env
+.DS_Store
+
+# Ignore virtual environment directory
+.venv/
+/.venv copy
+/.venu
+
+# Ignore any /tmp directory
+/tmp/*.png
+/tmp/script.log
