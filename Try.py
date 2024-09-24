@@ -19,7 +19,8 @@ load_dotenv(dotenv_path=dotenv_path)
 
 # Constants
 debug = 1
-try_times = 4
+try_times = 3
+top = 0
 TELEGRAM_BOT_TOKEN = os.getenv("telegram_bot_token")
 TELEGRAM_CHAT_ID = os.getenv("telegram_chat_id")
 ANTICAPTCHA_KEY = os.getenv("anticapcha_id")
@@ -133,7 +134,7 @@ def crop_captcha_image(image_path, left, ruight, bottom):
     """Crop the captcha from the screenshot."""
     img = Image.open(image_path)
     cropped_img = img.crop(
-        (left, 0, ruight + 3, bottom + 3)
+        (left - 3, top, ruight + 3, bottom + top + 3)
     )  # *2 is scaling factor for mac retina
     captcha_path = os.path.join(TEMP_FILES_PATH, "captcha_raw.png")
     cropped_img.save(captcha_path)
