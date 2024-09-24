@@ -9,11 +9,8 @@ from selenium.webdriver.chrome.service import Service
 from telegram import Bot
 from anticaptchaofficial.imagecaptcha import *
 from dotenv import load_dotenv
-from io import StringIO
 import datetime
 import sys
-import logging
-import json
 
 # Load environment variables from .env file
 dotenv_path = "/Users/I338058/PythonCode/ukr/.env"
@@ -142,28 +139,6 @@ def crop_captcha_image(image_path, left, ruight, bottom):
     return captcha_path
 
 
-def report_incorrect_captcha(task_id):
-    # Define the endpoint URL
-    url = "https://api.anti-captcha.com/reportIncorrectImageCaptcha"
-
-    # Prepare the request payload
-    payload = {"clientKey": ANTICAPTCHA_KEY, "taskId": task_id}
-
-    # Send the POST request
-    response = requests.post(
-        url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)
-    )
-
-    # Check the response
-    if response.status_code == 200:
-        print("Report submitted successfully.")
-        print("Response:", response.json())
-    else:
-        print("Failed to submit report.")
-        print("Status Code:", response.status_code)
-        print("Response:", response.text)
-
-
 async def main():
 
     # Get the current day of the week (0=Monday, 6=Sunday)
@@ -234,7 +209,15 @@ async def main():
                 page_source = driver.page_source
                 file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
                 file.write(page_source)
-                # solver.report_incorrect_image_captcha() #
+                await send_telegram_img(captcha_path)
+                await send_telegram_message(text)
+                if captcha_text != "12345678":
+                    solver.report_incorrect_image_captcha()
+                    text = "Captcha reported!!"
+                    await send_telegram_message(text)
+                    print(text)
+                    logging.error(text)
+
         else:
             parent_divs = driver.find_elements(
                 By.CSS_SELECTOR, "div.text-center.q-pa-md"
