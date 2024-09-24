@@ -18,17 +18,17 @@ dotenv_path = "/Users/I338058/PythonCode/ukr/.env"
 load_dotenv(dotenv_path=dotenv_path)
 
 # Constants
-debug = 0
+debug = 1
 try_times = 4
 TELEGRAM_BOT_TOKEN = os.getenv("telegram_bot_token")
 TELEGRAM_CHAT_ID = os.getenv("telegram_chat_id")
 ANTICAPTCHA_KEY = os.getenv("anticapcha_id")
-CAPTCHA_FAIL_SHORT = "Le code de sécurité saisi"
+CAPTCHA_FAIL_SHORT = "Le code de sécurité saisi est incorrect"
 TEMP_FILES_PATH = "/Users/I338058/PythonCode/ukr/tmp/"
 URL = "https://www.rdv-prefecture.interieur.gouv.fr/rdvpref/reservation/demarche/1904/cgu/"
-scrol_pixel = 3017
 expected_width = 1024  # Change based on your needs
 expected_height = 768  # Change based on your needs
+scrol_pixel = 3017
 
 # Configure logging
 LOG_FILE_PATH = os.path.join(TEMP_FILES_PATH, "script.log")
@@ -179,6 +179,8 @@ async def main():
         # Submit the CAPTCHA for solving and get the task_id
         if debug != 1:
             captcha_text = solve_captcha(captcha_path)  # This cost money =(
+        else:
+            captcha_text = "12345678"
 
         # Submit form
         text_field = driver.find_element(By.ID, "captchaFormulaireExtInput")
@@ -187,45 +189,82 @@ async def main():
         button = driver.find_element(By.XPATH, "//button[@type='submit']")
         button.click()
 
-        # Try to locate the parent div that contains the desired text
-        parent_divs = driver.find_elements(By.CSS_SELECTOR, "div.text-center.q-pa-md")
-        # Check if the parent div exists and contains the desired spans
-        if len(parent_divs) > 0:
-            parent_div = parent_divs[1]
+        # Check if the element exists by finding it
+        elements = driver.find_elements(By.ID, "text-input-captcha-desc-error")
 
-            # Check if the bold span exists
-            bold_text_elements = parent_div.find_elements(
-                By.CSS_SELECTOR, "span.fr-text--italic.fr-text--bold"
+        if elements:
+            # Captcha error
+            tr_txt = elements[0].text
+            if captcha_text.lower() == "blank":
+                # Captcha is blanked
+                text = f"Seems Captcha is blanked: {captcha_text}"
+                print(text)
+                logging.error(text)
+                await send_telegram_img(captcha_path)
+                await send_telegram_message(text)
+            elif debug != 1:
+                text = f"Captcha failed: {captcha_text}"
+                print(text)
+                logging.error(text)
+                screenshot_f_path = capture_screenshot(driver, "screenshot_failed.png")
+                page_source = driver.page_source
+                file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
+                file.write(page_source)
+        else:
+            parent_divs = driver.find_elements(
+                By.CSS_SELECTOR, "div.text-center.q-pa-md"
             )
-            if len(bold_text_elements) > 0:
-                bold_text = bold_text_elements[0].text
-                # Check if the italic (non-bold) span exists
-            else:
-                print("Bold italic text not found.")
-                logging.info("Bold italic text not found.")
+            # Check if the parent div exists and contains the desired spans
+            if len(parent_divs) > 0:
+                parent_div = parent_divs[1]
 
-            italic_text_elements = parent_div.find_elements(
-                By.CSS_SELECTOR, "span.fr-text--italic:not(.fr-text--bold)"
-            )
-            if len(italic_text_elements) > 0:
-                italic_text = italic_text_elements[0].text
-            else:
-                print("Italic (non-bold) text not found.")
-                logging.info("Italic (non-bold) text not found.")
-            if (
-                len(italic_text_elements) > 0
-                and italic_text_elements[0].text.strip()
-                and len(bold_text_elements) > 0
-                and bold_text_elements[0].text.strip()
-            ):
-                text = bold_text + " " + italic_text
-                last_text = save_text_if_different(
-                    os.path.join(TEMP_FILES_PATH, "update.log"), text
+                # Check if the bold span exists
+                bold_text_elements = parent_div.find_elements(
+                    By.CSS_SELECTOR, "span.fr-text--italic.fr-text--bold"
                 )
-                logging.info("No free places: " + text)
-                if last_text != text:
-                    await send_telegram_message("There was an update: " + text)
+                if len(bold_text_elements) > 0:
+                    bold_text = bold_text_elements[0].text
+                    # Check if the italic (non-bold) span exists
+                else:
+                    print("Bold italic text not found.")
+                    logging.info("Bold italic text not found.")
+
+                italic_text_elements = parent_div.find_elements(
+                    By.CSS_SELECTOR, "span.fr-text--italic:not(.fr-text--bold)"
+                )
+                if len(italic_text_elements) > 0:
+                    italic_text = italic_text_elements[0].text
+                else:
+                    print("Italic (non-bold) text not found.")
+                    logging.info("Italic (non-bold) text not found.")
+                if (
+                    len(italic_text_elements) > 0
+                    and italic_text_elements[0].text.strip()
+                    and len(bold_text_elements) > 0
+                    and bold_text_elements[0].text.strip()
+                ):
+                    text = bold_text + " " + italic_text
+                    last_text = save_text_if_different(
+                        os.path.join(TEMP_FILES_PATH, "update.log"), text
+                    )
+                    logging.info("No free places: " + text)
+                    if last_text != text:
+                        await send_telegram_message("There was an update: " + text)
+                else:
+                    # something else?
+                    text = "!Oh lala seems there are places go grab them!!!!"
+                    screenshot_f_path = capture_screenshot(
+                        driver, "screenshot_failed.png"
+                    )
+                    await send_telegram_message(text)
+                    await send_telegram_img(screenshot_f_path)
+                    logging.info(text)
+                    page_source = driver.page_source
+                    file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
+                    file.write(page_source)
+                try_i = try_times
             else:
+                # something else?
                 text = "!Oh lala seems there are places go grab them!!!!"
                 screenshot_f_path = capture_screenshot(driver, "screenshot_failed.png")
                 await send_telegram_message(text)
@@ -234,30 +273,12 @@ async def main():
                 page_source = driver.page_source
                 file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
                 file.write(page_source)
-            try_i = 20
-        else:
-            if debug != 1:
-                # Captcha or other error
-                print("Parent div with the class 'text-center q-pa-md' not found.")
-                text = f"Captcha failed: {captcha_text}"
-                logging.error(text)
-                screenshot_f_path = capture_screenshot(driver, "screenshot_failed.png")
-                # await send_telegram_img(captcha_path)
-                # await send_telegram_message(text)
-                page_source = driver.page_source
-                file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
-                file.write(page_source)
-            if captcha_text.lower() == "blank":
-                # Captcha is blanked
-                print("Seems captcha is blanked")
-                text = f"Captcha is blanked: {captcha_text}"
-                logging.error(text)
-                await send_telegram_img(captcha_path)
-                await send_telegram_message(text)
+                try_i = try_times
+
     if try_i == try_times and debug != 1:
         # Captcha incorrect 5 times
-        print(f"Captcha was incorrect {try_times} times")
         text = f"Captcha was incorrect {try_times} times: {captcha_text}"
+        print(text)
         logging.error(text)
         await send_telegram_img(captcha_path)
         await send_telegram_message(text)
