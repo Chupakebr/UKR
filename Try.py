@@ -18,6 +18,8 @@ dotenv_path = "/Users/I338058/PythonCode/ukr/.env"
 load_dotenv(dotenv_path=dotenv_path)
 
 # Constants
+debug = 0
+try_times = 4
 TELEGRAM_BOT_TOKEN = os.getenv("telegram_bot_token")
 TELEGRAM_CHAT_ID = os.getenv("telegram_chat_id")
 ANTICAPTCHA_KEY = os.getenv("anticapcha_id")
@@ -25,6 +27,8 @@ CAPTCHA_FAIL_SHORT = "Le code de sécurité saisi"
 TEMP_FILES_PATH = "/Users/I338058/PythonCode/ukr/tmp/"
 URL = "https://www.rdv-prefecture.interieur.gouv.fr/rdvpref/reservation/demarche/1904/cgu/"
 scrol_pixel = 3017
+expected_width = 1024  # Change based on your needs
+expected_height = 768  # Change based on your needs
 
 # Configure logging
 LOG_FILE_PATH = os.path.join(TEMP_FILES_PATH, "script.log")
@@ -48,7 +52,7 @@ options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--disable-gpu")
 options.add_argument("--disable-blink-features=AutomationControlled")
-options.add_argument("window-size=1024,768")
+options.add_argument(f"window-size={expected_width},{expected_height}")
 
 
 async def send_telegram_message(message):
@@ -109,6 +113,19 @@ def capture_screenshot(driver, file_name):
     """Capture and save a screenshot."""
     screenshot_path = os.path.join(TEMP_FILES_PATH, file_name)
     driver.save_screenshot(screenshot_path)
+    # Open the saved screenshot and check its dimensions
+    image = Image.open(screenshot_path)
+    width, height = image.size
+
+    # Check if the screenshot size is larger than the expected size (Retina case)
+    if width > expected_width or height > expected_height:
+        print(f"Screenshot size is {width}x{height}. Resizing is needed.")
+
+        # Resize the image
+        scale_factor = width / expected_width  # Assuming proportional scaling
+        scaled_image = image.resize((expected_width, int(height / scale_factor)))
+        scaled_image.save(screenshot_path)
+
     return screenshot_path
 
 
@@ -137,7 +154,7 @@ async def main():
     try_i = 0  # will be rerun with os
     tr_txt = ""
 
-    while try_i < 5 and (CAPTCHA_FAIL_SHORT in tr_txt or not tr_txt):
+    while try_i < try_times and (CAPTCHA_FAIL_SHORT in tr_txt or not tr_txt):
         try_i += 1
         logging.info(f"Attempt: {try_i}")
 
@@ -159,9 +176,9 @@ async def main():
         captcha_path = crop_captcha_image(screenshot_path, left, right, bottom)
 
         # Solve captcha
-        captcha_text = "12345678"
         # Submit the CAPTCHA for solving and get the task_id
-        captcha_text = solve_captcha(captcha_path)  # This cost money =(
+        if debug != 1:
+            captcha_text = solve_captcha(captcha_path)  # This cost money =(
 
         # Submit form
         text_field = driver.find_element(By.ID, "captchaFormulaireExtInput")
@@ -219,7 +236,7 @@ async def main():
                 file.write(page_source)
             try_i = 20
         else:
-            if captcha_text != "12345678":
+            if debug != 1:
                 # Captcha or other error
                 print("Parent div with the class 'text-center q-pa-md' not found.")
                 text = f"Captcha failed: {captcha_text}"
@@ -237,10 +254,10 @@ async def main():
                 logging.error(text)
                 await send_telegram_img(captcha_path)
                 await send_telegram_message(text)
-    if try_i == 5 and captcha_text != "12345678":
-        # Captcha incorrect 6 times
-        print("Captcha was incorrect 5 times")
-        text = f"Captcha was incorrect 5 times: {captcha_text}"
+    if try_i == try_times and debug != 1:
+        # Captcha incorrect 5 times
+        print(f"Captcha was incorrect {try_times} times")
+        text = f"Captcha was incorrect {try_times} times: {captcha_text}"
         logging.error(text)
         await send_telegram_img(captcha_path)
         await send_telegram_message(text)
