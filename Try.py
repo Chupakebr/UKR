@@ -9,8 +9,10 @@ from selenium.webdriver.chrome.service import Service
 from telegram import Bot
 from anticaptchaofficial.imagecaptcha import *
 from dotenv import load_dotenv
+from io import StringIO
 import datetime
 import sys
+import logging
 import json
 
 # Load environment variables from .env file
@@ -18,8 +20,8 @@ dotenv_path = "/Users/I338058/PythonCode/ukr/.env"
 load_dotenv(dotenv_path=dotenv_path)
 
 # Constants
-debug = 1
-try_times = 3
+debug = 0
+try_times = 1
 top = 0
 TELEGRAM_BOT_TOKEN = os.getenv("telegram_bot_token")
 TELEGRAM_CHAT_ID = os.getenv("telegram_chat_id")
@@ -44,7 +46,6 @@ logging.basicConfig(
 
 # Initialize Telegram Bot
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
-
 
 # Initialize Chrome WebDriver options
 options = webdriver.ChromeOptions()
@@ -98,7 +99,7 @@ def solve_captcha(image_path):
     captcha_text = solver.solve_and_return_solution(image_path)
     if captcha_text != "ERROR_CAPTCHA_UNSOLVABLE":
         logging.info(f"Captcha solved: {captcha_text}")
-        return captcha_text
+        return captcha_text, solver
     else:
         logging.error("Failed to solve captcha.")
         return None
@@ -141,6 +142,28 @@ def crop_captcha_image(image_path, left, ruight, bottom):
     return captcha_path
 
 
+def report_incorrect_captcha(task_id):
+    # Define the endpoint URL
+    url = "https://api.anti-captcha.com/reportIncorrectImageCaptcha"
+
+    # Prepare the request payload
+    payload = {"clientKey": ANTICAPTCHA_KEY, "taskId": task_id}
+
+    # Send the POST request
+    response = requests.post(
+        url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)
+    )
+
+    # Check the response
+    if response.status_code == 200:
+        print("Report submitted successfully.")
+        print("Response:", response.json())
+    else:
+        print("Failed to submit report.")
+        print("Status Code:", response.status_code)
+        print("Response:", response.text)
+
+
 async def main():
 
     # Get the current day of the week (0=Monday, 6=Sunday)
@@ -179,7 +202,7 @@ async def main():
         # Solve captcha
         # Submit the CAPTCHA for solving and get the task_id
         if debug != 1:
-            captcha_text = solve_captcha(captcha_path)  # This cost money =(
+            captcha_text, solver = solve_captcha(captcha_path)  # This cost money =(
         else:
             captcha_text = "12345678"
 
@@ -211,6 +234,7 @@ async def main():
                 page_source = driver.page_source
                 file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
                 file.write(page_source)
+                # solver.report_incorrect_image_captcha() #
         else:
             parent_divs = driver.find_elements(
                 By.CSS_SELECTOR, "div.text-center.q-pa-md"
@@ -263,7 +287,7 @@ async def main():
                     page_source = driver.page_source
                     file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
                     file.write(page_source)
-                try_i = try_times
+                try_i = try_times + 1
             else:
                 # something else?
                 text = "!Oh lala seems there are places go grab them!!!!"
@@ -274,7 +298,7 @@ async def main():
                 page_source = driver.page_source
                 file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
                 file.write(page_source)
-                try_i = try_times
+                try_i = try_times + 1
 
     if try_i == try_times and debug != 1:
         # Captcha incorrect 5 times
