@@ -18,7 +18,7 @@ load_dotenv(dotenv_path=dotenv_path)
 
 # Constants
 debug = 0
-try_times = 1
+try_times = 3
 top = 0
 TELEGRAM_BOT_TOKEN = os.getenv("telegram_bot_token")
 TELEGRAM_CHAT_ID = os.getenv("telegram_chat_id")
@@ -194,7 +194,7 @@ async def main():
         if elements:
             # Captcha error
             tr_txt = elements[0].text
-            if captcha_text.lower() == "blank":
+            if captcha_text.lower() == "blank" or captcha_text.lower() == "empty":
                 # Captcha is blanked
                 text = f"Seems Captcha is blanked: {captcha_text}"
                 print(text)
@@ -209,12 +209,12 @@ async def main():
                 page_source = driver.page_source
                 file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
                 file.write(page_source)
-                await send_telegram_img(captcha_path)
-                await send_telegram_message(text)
+                # await send_telegram_img(captcha_path)
+                # await send_telegram_message(text)
                 if captcha_text != "12345678":
                     solver.report_incorrect_image_captcha()
                     text = "Captcha reported!!"
-                    await send_telegram_message(text)
+                    # await send_telegram_message(text)
                     print(text)
                     logging.error(text)
 
