@@ -31,6 +31,9 @@ MY_phone_number = os.getenv("my_phone_number")
 CAPTCHA_FAIL_SHORT = "Le code de sécurité saisi est incorrect"
 TEMP_FILES_PATH = "/Users/I338058/PythonCode/ukr/tmp/"
 URL = "https://www.rdv-prefecture.interieur.gouv.fr/rdvpref/reservation/demarche/1904/cgu/"
+call_url = (
+    "https://drive.google.com/file/d/1HTvM-eCsqt8XdEX8GBqNS6c6_UPITAQO/view?usp=sharing"
+)
 expected_width = 1024  # Change based on your needs
 expected_height = 768  # Change based on your needs
 scrol_pixel = 3017
@@ -151,7 +154,7 @@ def make_call(to_number):
     call = client.calls.create(
         to=to_number,  # The phone number to call (in E.164 format, e.g., +1234567890)
         from_=twilio_phone_number,  # Your Twilio phone number
-        url="http://demo.twilio.com/docs/voice.xml",  # A URL to TwiML instructions for the call
+        url=call_url,  # A URL to TwiML instructions for the call
     )
     return call.sid
 
@@ -301,6 +304,7 @@ async def main():
                 file.write(page_source)
                 try_i = try_times + 1
                 make_call(MY_phone_number)
+    driver.quit()
 
     if try_i == try_times and debug != 1:
         # Captcha incorrect 5 times
@@ -309,8 +313,6 @@ async def main():
         logging.error(text)
         await send_telegram_img(captcha_path)
         await send_telegram_message(text)
-    driver.quit()
-    make_call(MY_phone_number)
 
 
 if __name__ == "__main__":
