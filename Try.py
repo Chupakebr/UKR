@@ -9,6 +9,7 @@ from selenium.webdriver.chrome.service import Service
 from telegram import Bot
 from anticaptchaofficial.imagecaptcha import *
 from dotenv import load_dotenv
+from twilio.rest import Client
 import datetime
 import sys
 
@@ -23,6 +24,10 @@ top = 0
 TELEGRAM_BOT_TOKEN = os.getenv("telegram_bot_token")
 TELEGRAM_CHAT_ID = os.getenv("telegram_chat_id")
 ANTICAPTCHA_KEY = os.getenv("anticapcha_id")
+twilio_sid = os.getenv("twilio_sid")
+twilio_tocken = os.getenv("twilio_tocken")
+twilio_phone_number = os.getenv("twilio_phone_number")
+MY_phone_number = os.getenv("my_phone_number")
 CAPTCHA_FAIL_SHORT = "Le code de sécurité saisi est incorrect"
 TEMP_FILES_PATH = "/Users/I338058/PythonCode/ukr/tmp/"
 URL = "https://www.rdv-prefecture.interieur.gouv.fr/rdvpref/reservation/demarche/1904/cgu/"
@@ -43,6 +48,8 @@ logging.basicConfig(
 
 # Initialize Telegram Bot
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
+# Initialize Twilio client
+client = Client(twilio_sid, twilio_tocken)
 
 # Initialize Chrome WebDriver options
 options = webdriver.ChromeOptions()
@@ -137,6 +144,16 @@ def crop_captcha_image(image_path, left, ruight, bottom):
     captcha_path = os.path.join(TEMP_FILES_PATH, "captcha_raw.png")
     cropped_img.save(captcha_path)
     return captcha_path
+
+
+# Function to make a call
+def make_call(to_number):
+    call = client.calls.create(
+        to=to_number,  # The phone number to call (in E.164 format, e.g., +1234567890)
+        from_=twilio_phone_number,  # Your Twilio phone number
+        url="http://demo.twilio.com/docs/voice.xml",  # A URL to TwiML instructions for the call
+    )
+    return call.sid
 
 
 async def main():
@@ -270,6 +287,7 @@ async def main():
                     page_source = driver.page_source
                     file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
                     file.write(page_source)
+                    make_call(MY_phone_number)
                 try_i = try_times + 1
             else:
                 # something else?
@@ -282,6 +300,7 @@ async def main():
                 file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
                 file.write(page_source)
                 try_i = try_times + 1
+                make_call(MY_phone_number)
 
     if try_i == try_times and debug != 1:
         # Captcha incorrect 5 times
@@ -290,8 +309,8 @@ async def main():
         logging.error(text)
         await send_telegram_img(captcha_path)
         await send_telegram_message(text)
-
     driver.quit()
+    make_call(MY_phone_number)
 
 
 if __name__ == "__main__":
