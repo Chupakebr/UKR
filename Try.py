@@ -229,12 +229,9 @@ async def main():
                 page_source = driver.page_source
                 file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
                 file.write(page_source)
-                # await send_telegram_img(captcha_path)
-                # await send_telegram_message(text)
                 if captcha_text != "12345678":
                     solver.report_incorrect_image_captcha()
                     text = "Captcha reported!!"
-                    # await send_telegram_message(text)
                     print(text)
                     logging.error(text)
 
@@ -307,7 +304,7 @@ async def main():
     driver.quit()
 
     if try_i == try_times and debug != 1:
-        # Captcha incorrect 5 times
+        # Captcha incorrect N times
         text = f"Captcha was incorrect {try_times} times: {captcha_text}"
         print(text)
         logging.error(text)
