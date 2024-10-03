@@ -221,10 +221,6 @@ async def main():
             await send_telegram_message(text)
             await send_telegram_img(screenshot_f_path)
             logging.info(text)
-            page_source = driver.page_source
-            file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
-            file.write(page_source)
-            try_i = try_times + 1
             make_call(MY_phone_number)
 
             time.sleep(3)  # Optional: Use explicit wait for better performance
@@ -248,6 +244,10 @@ async def main():
                         "//button[contains(@class, 'q-btn') and contains(., 'Suivant')]",
                     )
                     next_button.click()
+                    page_source = driver.page_source
+                    file = open(TEMP_FILES_PATH + "out.html", "w", encoding="utf-8")
+                    file.write(page_source)
+                    try_i = try_times + 1
                     text = "Clicked the 'Suivant' button!"
                     print(text)
                     logging.info(text)
