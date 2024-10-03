@@ -1,0 +1,360 @@
+/******** CSS SPECIFIQUE A CERTAINES PAGES *******/
+
+[v-cloak] {
+  display: none;
+}
+		
+:root {
+	--v-primary-invert: rgba(255, 255, 255, 0.9);
+	--v-secondary-invert: rgba(255, 255, 255, 0.9);
+	--v-accent-invert:	rgba(255, 255, 255, 0.9);
+}
+
+/** Use to add elements for ScreenReader only */
+.sr-only {
+  border: 0 !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  -webkit-clip-path: inset(50%) !important;
+  clip-path: inset(50%) !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  width: 1px !important;
+  white-space: nowrap !important;
+}
+
+iframe {
+	border: 0;
+}
+
+.text-primary-inverted  {
+	color:var(--v-primary-invert) !important; 
+}
+
+.text-secondary-inverted  {
+	color:var(--v-secondary-invert) !important; 
+}
+
+.text-accent-inverted  {
+	color:var(--v-accent-invert) !important; 
+}
+
+.v-field__required .q-field__label::after, .v-field__required .q-checkbox__label::after {
+  content: " *";
+  color: var(--q-negative);
+} 
+
+.v-field__required.v-field__has_after_label .q-field__label::after, .v-field__required.v-field__has_after_label .q-checkbox__label::after {
+  content: "";
+} 
+
+.v-field__required.v-field__has_after_label .q-field__label>:first-child::after, .v-field__required .q-checkbox__label>:first-child::after {
+  content: " *";
+  color: var(--q-negative);
+} 
+
+.q-field--error .q-checkbox__label {
+  color: var(--q-negative);
+}
+
+.notifications a.q-item {
+	text-decoration: none;
+	color: var(--q-dark) !important;
+}
+
+.not-mini .eq-mini { /* can't revert display:none (on IE of course), we must use a concrete selector*/
+	display:none;
+	visibility:hidden; /* for screen readers */
+}
+
+.mini {
+	transition: top .3s;
+    z-index:20; /* better foreground big header */
+    position:fixed;
+    top:0;
+    right:0;
+    left:0;
+    width:auto;
+}
+
+.mini.visible {
+	/** may be use to detect mini is visible*/
+}
+
+.mini .ne-mini {
+	display:none;
+    visibility:hidden; /* for screen readers */
+}
+
+.mini .eq-mini {
+	/*display: unset; /* can't revert display:none (on IE of course), we must use a concrete selector : .not_mini*/
+}
+
+
+.withFab .q-card-main {
+	position: relative;
+    padding-top: 35px;
+}
+
+.withFab .fab-block {
+	position: absolute;
+	top: 0;
+	right: 16px;
+	transform: translateY(-50%);
+	z-index: 1000;
+	height:3em;
+	width:3em;
+}
+
+img.avatar {
+	object-fit: cover;
+}
+
+/*
+.q-item-avatar, .q-item-avatar img {
+    object-fit: cover;
+}
+*/
+
+/**
+ * Tables
+ */
+/*
+.q-table-container {
+	background:#fff !important;
+}
+*/
+.table-primary thead {
+	background:var(--q-primary) !important;
+}
+.table-secondary thead {
+	background:var(--q-secondary) !important;
+}
+.table-accent thead {
+	background:var(--q-accent) !important;
+}
+
+.q-table__container th {
+  font-size: 18px; /*same as card-title*/
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 2rem;
+}
+
+/* check if usefull by default
+.q-table tr:hover td {
+    overflow: visible; 
+    white-space: normal;    
+}
+
+.q-table td, .q-table th {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}*/
+
+.table-primary th {
+	color:var(--q-primary-invert) !important;
+}
+.table-secondary th {
+	color:var(--q-secondary-invert) !important;
+}
+.table-accent th {
+	color:var(--q-accent-invert) !important;
+}
+
+
+.q-table-container th.sortable:hover,
+.q-table-container th.sorted {
+  color: rgba(255,255,255,1);  
+}
+.table-tertiary th.sortable:hover,
+.table-tertiary th.sorted {
+	color: rgba(60, 60, 60, 1);
+}
+
+.table-primary  .q-btn {
+	background: var(--q-primary);
+	color:var(--q-primary-invert);
+}
+.table-secondary  .q-btn {
+	background: var(--q-secondary);
+	color:var(--q-secondary-invert);
+}
+.table-tertiary  .q-btn {
+	background: var(--q-tertiary);
+	color:var(--q-tertiary-invert);
+}
+
+.q-tr .q-btn {
+    font-size:12px;
+}
+
+
+
+/**
+ * Facets
+ */
+
+.facets .facetValues .facetValue, .facets .selectedFacets .q-chip {
+	cursor: pointer;
+}
+
+.facets .facetValues .facetValue span{
+	width: 100%;
+	height: 100%;
+}
+
+.facets .q-item--clickable {
+    border-left: 3px solid lightgrey;
+}
+
+.facets .q-item--clickable:hover {
+    border-left: 3px solid var(--q-primary);
+    color : var(--q-primary);
+}
+
+.facets .q-list-dense .q-list-header {
+	padding-bottom:5px;
+	min-height: 25px;
+}
+
+.facets .q-chip {
+	font-size: 1rem;
+}
+
+.col-break {
+	margin:0 !important;
+	width:100%;
+}
+
+.no-touch .showButtonOnHover:hover > .q-btn,
+.no-touch tr:hover .showButtonOnHover > .q-btn {
+  opacity: 1;
+  transition: .5s;
+}
+
+.no-touch .showButtonOnHover > .q-btn {
+  opacity: 0;
+  transition: .5s;
+}
+
+.dropzone-area {
+	position: relative;
+}
+
+.q-uploader {
+	max-width:320px; /*choosed by quasar*/
+	width:auto !important;
+}
+.q-uploader__title {
+    min-width:25px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.q-uploader__title:hover {
+    overflow: visible; 
+    white-space: normal;
+}
+.q-uploader.q-uploader-readonly {
+    box-shadow: none;
+}
+.q-uploader.q-uploader-readonly .q-uploader__list {
+    padding:0px;
+    min-height:56px;
+}
+.q-uploader .q-uploader__list.scroll {
+    overflow:visible; 
+}
+.q-uploader__list.scroll .q-field__native.row {
+    overflow:auto; 
+}
+.q-uploader__list.scroll .q-field--auto-height .q-field__control {
+	max-height: 300px;
+}
+.q-uploader .q-field__label {
+	top: 10px;
+}
+.q-uploader  .q-field--auto-height.q-field--labeled .q-field__control-container {
+	padding-top: 18px;
+}
+
+table .q-uploader .q-btn {
+    background: none;
+    color:rgba(0,0,0,0.54);
+}
+.q-table .q-uploader__file {
+    max-width: inherit; /* for ellipsis */
+}
+
+.q-editor__content {
+    color: rgba(0,0,0,0.87); /** same color as q-field-input or textarea */
+}
+
+.q-editor--error {
+    border-color: var(--q-negative)!important
+}
+
+.q-field .q-editor {
+	width: 100%;
+}
+
+/*
+.q-table .q-btn {
+	text-align:right;
+}
+*/
+
+.v-modal{
+    max-width:unset;
+}
+
+/******** dev mode of authorizations *******/
+
+.authz--locked-overlay::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: 72px;
+    background-image: url("../images/authz-locked.png");
+    opacity: .7;
+    background-position: center;
+}
+
+.authz--locked {
+	background-size: 72px;
+    background-image: url("../images/authz-locked.png")!important;
+    opacity: .7;
+    background-position: center;
+}
+
+
+/********* spinner on pending actions *********************/
+@keyframes spinner-waitShow {
+    0% { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+@keyframes spinner-waitHidden {
+    0% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+.q-btn__content--hidden {
+    opacity: 0.5; 
+   -webkit-animation: spinner-waitShow 500ms;
+   -moz-animation: spinner-waitShow 500ms;
+   animation: spinner-waitShow 500ms;
+} 
+
+.q-btn .q-spinner {
+   -webkit-animation: spinner-waitHidden 500ms;
+   -moz-animation: spinner-waitHidden 500ms;
+   animation: spinner-waitHidden 500ms;
+} 
