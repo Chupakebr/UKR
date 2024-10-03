@@ -239,7 +239,16 @@ async def main():
                 first_radio_button = radio_buttons[0]  # Get the first button
                 if first_radio_button.is_enabled():  # Check if it's enabled
                     first_radio_button.click()
-                    text = "First available radio button clicked!"
+                    text = "First available calendar date clicked!"
+                    print(text)
+                    logging.info(text)
+                    # Attempt to click 'Suivant' button!
+                    next_button = driver.find_element(
+                        By.XPATH,
+                        "//button[contains(@class, 'q-btn') and contains(., 'Suivant')]",
+                    )
+                    next_button.click()
+                    text = "Clicked the 'Suivant' button!"
                     print(text)
                     logging.info(text)
                     text = driver.current_url
