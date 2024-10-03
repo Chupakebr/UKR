@@ -28,6 +28,12 @@ twilio_sid = os.getenv("twilio_sid")
 twilio_tocken = os.getenv("twilio_tocken")
 twilio_phone_number = os.getenv("twilio_phone_number")
 MY_phone_number = os.getenv("my_phone_number")
+NOME = os.getenv("nome")
+PRENOME = os.getenv("prenome")
+JOUR = os.getenv("jour")
+INDEX = os.getenv("index")
+MAIL = os.getenv("mail")
+PHONE = os.getenv("phone")
 CAPTCHA_FAIL_SHORT = "Le code de sécurité saisi est incorrect"
 TEMP_FILES_PATH = "/Users/I338058/PythonCode/ukr/tmp/"
 URL = "https://www.rdv-prefecture.interieur.gouv.fr/rdvpref/reservation/demarche/1904/cgu/"
@@ -220,8 +226,36 @@ async def main():
             file.write(page_source)
             try_i = try_times + 1
             make_call(MY_phone_number)
+
+            time.sleep(3)  # Optional: Use explicit wait for better performance
+
+            # Find the first available radio button with an id that starts with 'trhId_'
+            radio_buttons = driver.find_elements(
+                By.XPATH, "//input[starts-with(@id, 'trhId_')]"
+            )
+
+            # Click the first available radio button if any exist
+            if radio_buttons:
+                first_radio_button = radio_buttons[0]  # Get the first button
+                if first_radio_button.is_enabled():  # Check if it's enabled
+                    first_radio_button.click()
+                    text = "First available radio button clicked!"
+                    print(text)
+                    logging.info(text)
+                    text = driver.current_url
+                    print(text)
+                    logging.info(text)
+                    await send_telegram_message(text)
+                else:
+                    text = "The first radio button is not enabled."
+                    print(text)
+                    logging.info(text)
+            else:
+                text = "No radio buttons found."
+                print(text)
+                logging.info(text)
         else:
-            # Check if the element exists by finding it
+            # Check when was last update to save it
             elements = driver.find_elements(By.ID, "text-input-captcha-desc-error")
             if elements:
                 # Captcha error
